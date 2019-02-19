@@ -1,0 +1,4 @@
+# Unit Tests for passing trace-01-ops.cmd
+new
+ih hello
+show
