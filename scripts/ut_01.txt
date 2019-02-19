@@ -2,3 +2,5 @@
 new
 ih hello
 show
+rh hello
+show
