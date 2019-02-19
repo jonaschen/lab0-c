@@ -27,6 +27,7 @@ queue_t *q_new()
     queue_t *q = malloc(sizeof(queue_t));
     /* What if malloc returned NULL? */
     q->head = NULL;
+    q->tail = NULL;
     q->size = 0;
     return q;
 }
@@ -44,6 +45,38 @@ void q_free(queue_t *q)
 }
 
 /*
+  Attempt to allocate an new element.
+  Return pointer to new element if successful.
+  Return NULL if could not allocate space.
+  Allocate space and copy the string into it.
+ */
+static list_ele_t *q_allocate_new(char *s)
+{
+    list_ele_t *newh;
+    char *data = NULL;
+    size_t len;
+
+    newh = malloc(sizeof(list_ele_t));
+    if (newh == NULL)
+        return false;
+
+    if (s) {
+        len = strlen(s) + 1;
+        data = (char *) malloc(len);
+        if (data == NULL) {
+            free(newh);
+            return NULL;
+        }
+        memcpy(data, s, len);
+    }
+
+    newh->value = data;
+    newh->next = NULL;
+
+    return newh;
+}
+
+/*
   Attempt to insert element at head of queue.
   Return true if successful.
   Return false if q is NULL or could not allocate space.
@@ -53,28 +86,20 @@ void q_free(queue_t *q)
 bool q_insert_head(queue_t *q, char *s)
 {
     list_ele_t *newh;
-    char *data;
-    size_t len;
 
     if (q == NULL)
         return false;
 
-    newh = malloc(sizeof(list_ele_t));
+    newh = q_allocate_new(s);
     if (newh == NULL)
         return false;
 
-    len = strlen(s) + 1;
-    data = (char *) malloc(len);
-    if (data == NULL) {
-        free(newh);
-        return false;
-    }
-    memcpy(data, s, len);
-
-    newh->value = data;
     newh->next = q->head;
     q->head = newh;
     q->size += 1;
+
+    if (!q->tail)
+        q->tail = newh;
 
     return true;
 }
@@ -89,9 +114,25 @@ bool q_insert_head(queue_t *q, char *s)
  */
 bool q_insert_tail(queue_t *q, char *s)
 {
-    /* You need to write the complete code for this function */
     /* Remember: It should operate in O(1) time */
-    return false;
+    list_ele_t *newh;
+
+    if (q == NULL)
+        return false;
+
+    newh = q_allocate_new(s);
+    if (newh == NULL)
+        return false;
+
+    if (q->tail)
+        q->tail->next = newh;
+    q->tail = newh;
+    q->size += 1;
+
+    if (!q->head)
+        q->head = newh;
+
+    return true;
 }
 
 /*
@@ -128,6 +169,9 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
     q->head = q->head->next;
     q->size -= 1;
     free(head);
+
+    if (q->head == NULL)
+        q->tail = NULL;
 
     return true;
 }
