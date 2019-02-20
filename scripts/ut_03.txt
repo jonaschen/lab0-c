@@ -1,0 +1,8 @@
+# Unit Tests for passing trace-03-ops.cmd
+new
+it tail
+it tail-of-tail
+ih head
+show
+reverse
+show
