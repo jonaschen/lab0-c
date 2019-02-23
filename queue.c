@@ -59,13 +59,13 @@ static list_ele_t *q_allocate_new(char *s)
     size_t len;
 
     newh = malloc(sizeof(list_ele_t));
-    if (newh == NULL)
-        return false;
+    if (!newh)
+        return NULL;
 
     if (s) {
         len = strlen(s) + 1;
         data = (char *) malloc(len);
-        if (data == NULL) {
+        if (!data) {
             free(newh);
             return NULL;
         }
@@ -89,11 +89,11 @@ bool q_insert_head(queue_t *q, char *s)
 {
     list_ele_t *newh;
 
-    if (q == NULL)
+    if (!q)
         return false;
 
     newh = q_allocate_new(s);
-    if (newh == NULL)
+    if (!newh)
         return false;
 
     newh->next = q->head;
@@ -119,11 +119,11 @@ bool q_insert_tail(queue_t *q, char *s)
     /* Remember: It should operate in O(1) time */
     list_ele_t *newh;
 
-    if (q == NULL)
+    if (!q)
         return false;
 
     newh = q_allocate_new(s);
-    if (newh == NULL)
+    if (!newh)
         return false;
 
     if (q->tail)
@@ -147,22 +147,16 @@ bool q_insert_tail(queue_t *q, char *s)
 */
 bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 {
-    size_t len;
     list_ele_t *head;
 
-    if (q == NULL)
-        return false;
-
-    if (q->head == NULL)
+    if (!q || !q->head)
         return false;
     head = q->head;
 
     if (head->value) {
-        if (sp && head->value) {
-            len = strlen(head->value);
-            len = (len > bufsize - 1) ? bufsize - 1 : len;
-            memcpy(sp, head->value, len);
-            sp[len] = '\0';
+        if (sp && bufsize > 0) {
+            strncpy(sp, head->value, bufsize - 1);
+            sp[bufsize - 1] = '\0';
         }
         free(head->value);
         head->value = NULL;
@@ -200,26 +194,18 @@ int q_size(queue_t *q)
  */
 void q_reverse(queue_t *q)
 {
-    list_ele_t *node, *next, *tail;
+    list_ele_t *head = NULL, *node, *next;
 
-    if (!q)
+    if (!q || q_size(q) <= 1)
         return;
 
-    if (q_size(q) <= 1)
-        return;
-
-    tail = q->tail;
-    node = q->head;
     q->tail = q->head;
-    q->head = NULL;
-    while (node != tail) {
-        tail->next = node;
+    for (node = q->head; node; node = next) {
         next = node->next;
-        node->next = q->head;
-        q->head = node;
-        node = next;
+        node->next = head;
+        head = node;
     }
-    q->head = tail;
+    q->head = head;
 
     return;
 }
